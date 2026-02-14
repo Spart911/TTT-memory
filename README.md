@@ -32,6 +32,30 @@ python my_model.py
 - `MODEL_SIZE` — выбор размера.
 - `WINDOW`, `TTT_BATCH`, `TRAIN_BATCH`, `MICRO_BATCH`.
 
+### Модель и обучение (my_model.py)
+
+**Архитектура**
+- Transformer с sliding‑window attention.
+- QK‑norm включен (`USE_QK_NORM=True`).
+- TTT‑блоки — последние 1/4 блоков.
+- В TTT‑блоках две MLP: `mlp_ttt` (обновляемая) + `mlp_static` (safe storage).
+- MLP hidden уменьшен глобально, чтобы компенсировать добавление второй MLP.
+
+**TTT‑адаптация**
+- Обновляются **только MLP** в последних 1/4 блоков.
+- Inner‑loop: mini‑batch TTT с window `k` и batch `b` (условие `k ≥ b`).
+- Градиенты вычисляются по fast‑весам (batched fast‑deltas).
+
+**Meta‑training**
+- В `forward_ttt_meta` делается split последовательности:
+  - первая часть = TTT‑адаптация,
+  - вторая часть = post‑TTT loss.
+- Цель обучения — минимизировать post‑TTT loss (bi‑level).
+
+**Функция ошибки**
+- next‑token cross‑entropy.
+- Для meta‑training используется post‑TTT loss.
+
 ## TinyLoRA диалоговое обучение
 
 ```bash
