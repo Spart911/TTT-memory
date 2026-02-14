@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+
+# Model weights
+*.pth
+
+# Tokenizer cache (если можно скачать заново)
+tokenizer_hf/
+
+# OS
+.DS_Store
